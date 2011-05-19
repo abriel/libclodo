@@ -17,3 +17,9 @@ METHODS:
 	get_account_balance()
 		Returns balance of you account.
 
+	get_server_status(server_id)
+		Returns status of server: 'is_running' or something else.
+		server_id - ID of your VPS. For example, if you see your
+		VPS in panel as 'VPS xxxxx-1', server_id will be 1.
+
+		

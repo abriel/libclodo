@@ -30,17 +30,25 @@ class APIClodo():
 		self.__auth_token = response.getheader('X-Auth-Token')
 		self.__management_url = response.getheader('X-Server-Management-Url')
 
-	def get_account_balance(self):
+	def __request(self, method, uri):
 		htcs = httplib.HTTPSConnection( httplib.urlsplit(self.__management_url).netloc )
-		htcs.putrequest('GET', httplib.urlsplit(self.__management_url).path + '/billing/balance')
+		htcs.putrequest(method, httplib.urlsplit(self.__management_url).path + uri)
 		htcs.putheader('X-Auth-Token', self.__auth_token)
 		htcs.putheader('Accept', 'application/json')
 		htcs.endheaders()
 
 		response = htcs.getresponse()
 		json_data = response.read()
+		
+		return JSONDecoder().decode(json_data)
 
-		balance = JSONDecoder().decode(json_data).get('balance')
+	def get_account_balance(self):
+		answer_record = self.__request('GET', '/billing/balance')
 
-		return balance
+		return answer_record.get('balance')
+
+	def get_server_status(self, server_id):
+		answer_record = self.__request('GET', '/servers/' + server_id.__str__())
+
+		return answer_record.get('server').get('status')
 
