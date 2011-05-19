@@ -1,0 +1,19 @@
+python modules requirements:
+	simplejson
+
+sample:
+>>> from libclodo import APIClodo
+>>> a = APIClodo('mylogin@example.com', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+>>> print a.get_account_balance()
+
+
+Create instance of class APIClodo:
+	APIClodo(LOGIN, ACCESS_KEY)
+		LOGIN - Login name used to access to https://panel.clodo.ru
+		ACCESS_KEY - You can generate this key in 'my profile' into https://panel.clodo.ru
+
+METHODS:
+	
+	get_account_balance()
+		Returns balance of you account.
+
