@@ -2,7 +2,7 @@ import httplib
 from simplejson import JSONDecoder
 
 
-class APIClodo():
+class APIClodo(object):
 
 	__access_key     = ''
 	__login          = ''
