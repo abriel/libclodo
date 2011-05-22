@@ -31,6 +31,13 @@ class APIClodo(object):
 		httpc.endheaders()
 
 		response = httpc.getresponse()
+
+		if response.status != 204:
+			if response.status == 401:
+				raise ClodoAuthorizationFailed()
+			else:
+				raise ClodoGenericException(code=response.status)
+
 		self.__auth_token = response.getheader('X-Auth-Token')
 		self.__management_url = response.getheader('X-Server-Management-Url')
 
@@ -42,17 +49,60 @@ class APIClodo(object):
 		htcs.endheaders()
 
 		response = htcs.getresponse()
+		if response.status not in [200, 204]:
+			raise ClodoGenericException(code=response.status)
+
 		json_data = response.read()
 		
 		return JSONDecoder().decode(json_data)
 
 	def get_account_balance(self):
-		answer_record = self.__request('GET', '/billing/balance')
+		try:
+			answer_record = self.__request('GET', '/billing/balance')
+		except ClodoGenericException as e:
+			if e.code == 404:
+				raise ClodoRecordsNotFound()
+			else:
+				raise ClodoGenericException(code=e.code)
 
 		return answer_record.get('balance')
 
 	def get_server_status(self, server_id):
-		answer_record = self.__request('GET', '/servers/' + server_id.__str__())
+		try:
+			answer_record = self.__request('GET', '/servers/' + server_id.__str__())
+		except ClodoGenericException as e:
+			if e.code == 404:
+				raise ClodoServerNotFound()
+			else:
+				raise ClodoGenericException(code=e.code)
 
 		return answer_record.get('server').get('status')
+
+
+class ClodoGenericException(Exception):
+	
+	def __init__(self, code, msg='Unknown error'):
+		self.msg = msg
+		self.code = code
+	
+	def __str__(self):
+		return repr("%s. Clodo error code: %s" % (self.msg, self.code) )
+
+class ClodoAuthorizationFailed(ClodoGenericException):
+	def __init__(self):
+		self.msg = 'Authorization error: Can not get X-Auth-Token for given pair LOGIN and ACCESS_KEY'
+		self.code = 401
+
+class ClodoGenericNotFound(ClodoGenericException):
+	code = 404
+	def __init__(self):
+		self.msg = 'Generic not found error'
+
+class ClodoRecordsNotFound(ClodoGenericNotFound):
+	def __init__(self):
+		self.msg = 'No Records Found'
+
+class ClodoServerNotFound(ClodoGenericNotFound):
+	def __init__(self):
+		self.msg = 'No Servers Found'
 
