@@ -1,5 +1,9 @@
 import httplib
-from simplejson import JSONDecoder
+
+try:
+    from json import JSONDecoder
+except ImportError:
+    from simplejson import JSONDecoder # for python < v2.6
 
 
 class APIClodo(object):

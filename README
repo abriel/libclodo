@@ -1,5 +1,5 @@
 python modules requirements:
-	simplejson
+	simplejson for python < v2.6
 
 sample:
 >>> from libclodo import APIClodo
