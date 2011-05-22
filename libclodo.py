@@ -110,3 +110,8 @@ class ClodoServerNotFound(ClodoGenericNotFound):
 	def __init__(self):
 		self.msg = 'No Servers Found'
 
+class ClodoRequestNotFound(ClodoGenericNotFound):
+	def __init__(self):
+		self.msg = 'Request not found'
+
+		
