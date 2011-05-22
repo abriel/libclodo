@@ -22,4 +22,8 @@ METHODS:
 		server_id - ID of your VPS. For example, if you see your
 		VPS in panel as 'VPS xxxxx-1', server_id will be 1.
 
-		
+	get_server_info(server_id)
+		Returns detail information about given server in
+		python dict format.
+	
+	

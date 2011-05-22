@@ -67,7 +67,7 @@ class APIClodo(object):
 
 		return answer_record.get('balance')
 
-	def get_server_status(self, server_id):
+	def get_server_info(self, server_id):
 		try:
 			answer_record = self.__request('GET', '/servers/' + server_id.__str__())
 		except ClodoGenericException as e:
@@ -76,8 +76,12 @@ class APIClodo(object):
 			else:
 				raise ClodoGenericException(code=e.code)
 
-		return answer_record.get('server').get('status')
+		return answer_record.get('server')
 
+	def get_server_status(self, server_id):
+		server_info = self.get_server_info(server_id)
+
+		return server_info.get('status')
 
 class ClodoGenericException(Exception):
 	
