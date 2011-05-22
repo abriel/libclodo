@@ -83,6 +83,25 @@ class APIClodo(object):
 
 		return server_info.get('status')
 
+	def get_backup_list(self, server_id):
+		request = '/servers/' + server_id.__str__() + '/backup/getlist'
+		try:
+			answer_record = self.__request('GET', request)
+		except ClodoGenericException as e:
+			if e.code == 404:
+				raise ClodoServerNotFound()
+			elif e.code == 400:
+				raise ClodoRequestError(request)
+			else:
+				raise ClodoGenericException(code=e.code)
+			
+		backup_list = answer_record.get('backups').get('backup')
+		if isinstance(backup_list, dict):
+			backup_list = [backup_list]
+		
+		return backup_list
+
+
 class ClodoGenericException(Exception):
 	
 	def __init__(self, code, msg='Unknown error'):
@@ -114,4 +133,8 @@ class ClodoRequestNotFound(ClodoGenericNotFound):
 	def __init__(self):
 		self.msg = 'Request not found'
 
-		
+class ClodoRequestError(ClodoGenericException):
+	def __init__(self, request):
+		self.msg = 'Request (%s) error' % request
+		self.code = 400
+

@@ -26,4 +26,8 @@ METHODS:
 		Returns detail information about given server in
 		python dict format.
 	
-	
+	get_backup_list(server_id)
+		Returns list of backups for given server.
+		each list element is dict.
+
+		
