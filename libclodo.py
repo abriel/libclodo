@@ -1,5 +1,4 @@
 import httplib
-import time
 
 try:
     from json import JSONDecoder
@@ -40,19 +39,24 @@ class APIClodo(object):
 				raise ClodoGenericException(code=response.status)
 
 		self.__auth_token = response.getheader('X-Auth-Token')
-		self.__auth_last_time = int(time.time())
 		self.__management_url = response.getheader('X-Server-Management-Url')
 
-	def __request(self, method, uri):
-		if self.__auth_last_time + 20*60 - 30 < int(time.time()):
-			self.__get_auth_token()
+	def __really_request(self, method, uri):
 		htcs = httplib.HTTPSConnection( httplib.urlsplit(self.__management_url).netloc )
 		htcs.putrequest(method, httplib.urlsplit(self.__management_url).path + uri)
 		htcs.putheader('X-Auth-Token', self.__auth_token)
 		htcs.putheader('Accept', 'application/json')
 		htcs.endheaders()
 
-		response = htcs.getresponse()
+		return htcs.getresponse()
+
+	def __request(self, method, uri):
+		response = self.__really_request(method, uri)
+
+		if response.status == 401:
+			self.__get_auth_token()
+			response = self.__really_request(method, uri)
+
 		if response.status not in [200, 204]:
 			raise ClodoGenericException(code=response.status)
 
