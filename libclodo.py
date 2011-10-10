@@ -1,7 +1,7 @@
 import httplib
 
 try:
-    from json import JSONDecoder
+    from json import JSONDecoder, JSONEncoder
 except ImportError:
     from simplejson import JSONDecoder # for python < v2.6
 
@@ -41,28 +41,33 @@ class APIClodo(object):
 		self.__auth_token = response.getheader('X-Auth-Token')
 		self.__management_url = response.getheader('X-Server-Management-Url')
 
-	def __really_request(self, method, uri):
+	def __really_request(self, method, uri, body):
 		htcs = httplib.HTTPSConnection( httplib.urlsplit(self.__management_url).netloc )
-		htcs.putrequest(method, httplib.urlsplit(self.__management_url).path + uri)
-		htcs.putheader('X-Auth-Token', self.__auth_token)
-		htcs.putheader('Accept', 'application/json')
-		htcs.endheaders()
+		headers = {
+					'Accept' : 'application/json',
+					'X-Auth-Token' : self.__auth_token,
+				}
+		htcs.request(method, httplib.urlsplit(self.__management_url).path + uri, body, headers)
 
 		return htcs.getresponse()
 
-	def __request(self, method, uri):
-		response = self.__really_request(method, uri)
+	def __request(self, method, uri, body=None):
+		response = self.__really_request(method, uri, body)
 
 		if response.status == 401:
 			self.__get_auth_token()
-			response = self.__really_request(method, uri)
+			response = self.__really_request(method, uri, body)
 
 		if response.status not in [200, 204]:
 			raise ClodoGenericException(code=response.status)
 
 		json_data = response.read()
+		try:
+			r_data = JSONDecoder().decode(json_data)
+		except ValueError:
+			r_data = None
 		
-		return JSONDecoder().decode(json_data)
+		return r_data
 
 	def get_account_balance(self):
 		try:
@@ -108,6 +113,25 @@ class APIClodo(object):
 			backup_list = [backup_list]
 		
 		return backup_list
+
+	def set_memory_min(self, server, memory_value):
+		request_body = {'server':{
+			'vps_memory' : memory_value
+		}}
+
+		try:
+			answer_record = self.__request('PUT', '/servers/%s' % str(server), JSONEncoder().encode(request_body) )
+		except ClodoGenericException as e:
+			if e.code == 400:
+				raise ClodoRequestError('set memory minimal limit')
+			elif e.code == 405:
+				raise ClodoGenericException(405, 'function temporary not avaliable')
+			elif e.code == 500:
+				raise ClodoGenericException(500, 'Internal error')
+			else:
+				raise ClodoGenericException(code=e.code)
+		
+		return answer_record
 
 
 class ClodoGenericException(Exception):
