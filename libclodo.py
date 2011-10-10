@@ -1,4 +1,7 @@
+# coding : utf8
+
 import httplib
+import os
 
 try:
     from json import JSONDecoder, JSONEncoder
@@ -58,14 +61,27 @@ class APIClodo(object):
 			self.__get_auth_token()
 			response = self.__really_request(method, uri, body)
 
-		if response.status not in [200, 204]:
-			raise ClodoGenericException(code=response.status)
-
 		json_data = response.read()
 		try:
 			r_data = JSONDecoder().decode(json_data)
 		except ValueError:
 			r_data = None
+
+		if response.status not in [200, 204]:
+			try:
+				os.sys.stderr.write('''Bad request details: 
+	METHOD: %s
+	URI: %s
+	DETAIL: %s
+	STATUS CODE: %s
+	BODY: %s
+
+	''' % (method, uri, r_data['BadRequest']['details'], response.status, body)
+	)
+				os.sys.stderr.flush()
+			except:
+				pass
+			raise ClodoGenericException(code=response.status)
 		
 		return r_data
 
