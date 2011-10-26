@@ -1,6 +1,7 @@
 # coding : utf8
 
 import httplib
+import datetime
 import os
 
 try:
@@ -49,6 +50,7 @@ class APIClodo(object):
 		headers = {
 					'Accept' : 'application/json',
 					'X-Auth-Token' : self.__auth_token,
+					'Content-Type' : 'application/json',
 				}
 		htcs.request(method, httplib.urlsplit(self.__management_url).path + uri, body, headers)
 
@@ -148,6 +150,35 @@ class APIClodo(object):
 				raise ClodoGenericException(code=e.code)
 		
 		return answer_record
+
+	def get_stats(self, server, time_from, time_to=datetime.datetime.now().strftime('%Y-%m-%d %T')):
+		request_body = {'stats':{
+			'from' : time_from,
+			'to' : time_to,
+		}}
+
+		try:
+			answer_record = self.__request('POST', '/stats/%s' % str(server), JSONEncoder().encode(request_body) )
+		except ClodoGenericException as e:
+			if e.code == 400:
+				raise ClodoRequestError('Incorrect Request')
+			elif e.code == 404:
+				raise ClodoRecordsNotFound()
+			else:
+				raise ClodoGenericException(code=e.code)
+		
+		return answer_record['stats']
+
+	def get_stats_traffic(self, server, time_from, time_to=None):
+		stats = self.get_stats(server, time_from, time_to) if time_to is not None else self.get_stats(server, time_from)
+		if isinstance(stats, dict):
+			net_tx = net_rx = 0
+			for item in stats['row']:
+				net_tx += int(item['net_tx'])
+				net_rx += int(item['net_rx'])
+			
+			return {'net_tx' : net_tx, 'net_rx' : net_rx}
+		return None
 
 
 class ClodoGenericException(Exception):
