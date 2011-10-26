@@ -151,7 +151,9 @@ class APIClodo(object):
 		
 		return answer_record
 
-	def get_stats(self, server, time_from, time_to=datetime.datetime.now().strftime('%Y-%m-%d %T')):
+	def get_stats(self, server, time_from, time_to='NOW'):
+		if time_to == 'NOW':
+			time_to = datetime.datetime.now().strftime('%Y-%m-%d %T')
 		request_body = {'stats':{
 			'from' : time_from,
 			'to' : time_to,
