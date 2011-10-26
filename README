@@ -30,4 +30,11 @@ METHODS:
 		Returns list of backups for given server.
 		each list element is dict.
 
-		
+	get_stats(server_id, time_from, [time_to]):
+		Returns information about server usage resources.
+		If time_to is not set, using NOW.
+
+	get_stats_traffic(server_id, time_from, [time_to]):
+		Returns information about internet traffic of server.
+		If time_to is not set, using NOW.
+	
