@@ -37,4 +37,7 @@ METHODS:
 	get_stats_traffic(server_id, time_from, [time_to]):
 		Returns information about internet traffic of server.
 		If time_to is not set, using NOW.
+		
+		
+## TEST AWS PIPELINE 1
 	
